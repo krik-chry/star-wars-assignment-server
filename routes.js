@@ -54,7 +54,7 @@ router.get('/films/:searchTerm?/:order?', async (req, res) => {
     }
   });
 
-  if (order.toLowerCase === 'asc') {
+  if (order === 'asc') {
     heightAsc(charactersArray);
     res.send({ title: movieTitle, characters: charactersArray });
   } else {
