@@ -5,6 +5,29 @@ const router = new Router();
 
 const baseUrl = 'https://swapi.co/api/films';
 
+router.get('/allFilms', async (req, res) => {
+  let allFilms = [];
+  const response = await axios.get(`${baseUrl}`);
+  const data = response.data.results;
+
+  await Promise.all(data).then(responses =>
+    responses.map(response =>
+      allFilms.push({
+        id: response.url.slice(-2, -1),
+        title: response.title,
+        releaseYear: response.release_date.slice(0, 4),
+        episode: response.episode_id
+      })
+    )
+  );
+
+  allFilms.sort(function(a, b) {
+    return a.id - b.id;
+  });
+
+  res.status(200).send(allFilms);
+});
+
 // Function to check order (asc/desc) request and sort characters by height
 function sortByHeight(charactersArray, order) {
   if (order.toLowerCase() === 'asc') {
@@ -59,7 +82,7 @@ async function getFilmCharacters(data, charactersArray, order, filmTitle, res) {
 
 // Endpoint for searching film by ID or title term, and listing all the film characters
 // names and heights. If order is specified, characters are sorted by height (asc/desc)
-router.get('/:term?/:order?', async (req, res) => {
+router.get('/search/:term?/:order?', async (req, res) => {
   // Get user's input (term and order) from request parameters
   const { term, order } = req.params;
 
@@ -70,7 +93,7 @@ router.get('/:term?/:order?', async (req, res) => {
   // Check search term to exist and not be a number > 7. If OK, proceed with the API call, if NOT, send a message with user's options
   if (!term || term > 7) {
     res.status(400).send({
-      error: `Please enter the film ID or a search term. 1) A New Hope, 2) The Empire Strikes Back, 3) Return of the Jedi, 4) The Phantom Menace, 5) Attack of the Clones, 6) Revenge of the Sith, 7) The Force Awakens`
+      message: `You can search by ID....but only from 1-7.`
     });
   } else {
     // Define search term, a variable that is changing in each case
@@ -90,6 +113,7 @@ router.get('/:term?/:order?', async (req, res) => {
       getFilmCharacters(data, charactersArray, order, filmTitle, res);
     } else {
       // Case 2: The user is searching by a film title term
+
       // Assign user's search input to searchTerm variable
       searchTerm = `?search=${term}`;
 
@@ -105,9 +129,9 @@ router.get('/:term?/:order?', async (req, res) => {
         // Assign the response's data to data variable if 1 film found
         data = response.data.results[0];
       } else if (response.data.count === 0) {
-        return res.status(404).send({ Message: '0 results found' });
+        return res.status(404).send({ message: '0 results found' });
       } else {
-        return res.status(400).send({ Message: 'Too many results. Please be more specific.' });
+        return res.status(400).send({ message: 'Too many results. Please be more specific.' });
       }
 
       // After we get the film data from the response, the getFilmCharacters is called with the needed arguments
