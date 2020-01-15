@@ -15,7 +15,6 @@ router.get('/allFilms', async (req, res) => {
       allFilms.push({
         id: response.url.slice(-2, -1),
         title: response.title,
-        releaseYear: response.release_date.slice(0, 4),
         episode: response.episode_id
       })
     )
@@ -49,6 +48,7 @@ function sortByHeight(charactersArray, order) {
 async function getFilmCharacters(data, charactersArray, order, filmTitle, res) {
   // Extract movie info ( title & character's URLs) from response data
   const movieInfo = {
+    release_date: data.release_date.slice(0, 4),
     title: data.title,
     characters: data.characters
   };
@@ -70,13 +70,21 @@ async function getFilmCharacters(data, charactersArray, order, filmTitle, res) {
   // Then send the response, including film title, characters list and order by height description
   if (order && (order.toLowerCase() === 'asc' || order.toLowerCase() === 'desc')) {
     sortByHeight(charactersArray, order);
-    res.status(200).send({ filmTitle: filmTitle, characters: charactersArray, heightOrder: order });
+    res.status(200).send({
+      filmTitle: filmTitle,
+      release_date: movieInfo.release_date,
+      characters: charactersArray,
+      heightOrder: order
+    });
   } else {
     // If no order is specified or there is a typo, default order is Desc
     sortByHeight(charactersArray, 'desc');
-    res
-      .status(200)
-      .send({ filmTitle: filmTitle, characters: charactersArray, heightOrder: 'desc' });
+    res.status(200).send({
+      filmTitle: filmTitle,
+      release_date: movieInfo.release_date,
+      characters: charactersArray,
+      heightOrder: 'desc'
+    });
   }
 }
 
