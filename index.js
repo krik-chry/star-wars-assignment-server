@@ -7,7 +7,7 @@ const router = require('./routes');
 
 // Initialize app and setup cors middleware
 const app = express();
-const port = 4000;
+const port = process.env.PORT || 4000;
 const corsMiddleware = cors();
 
 app.use(corsMiddleware);
